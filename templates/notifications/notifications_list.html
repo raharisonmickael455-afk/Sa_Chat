@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - Sa Chat{% endblock %}
+
+{% block content %}
+<section class="panel-card simple-panel">
+    <div class="page-header">
+        <div>
+            <p class="eyebrow">Centre de notifications</p>
+            <h1>Mes notifications</h1>
+        </div>
+    </div>
+
+    {% if notifications %}
+        <div class="notification-list">
+            {% for notification in notifications %}
+            <article class="notification-item {% if not notification.is_read %}notification-item--unread{% endif %}">
+                <a href="{% url 'open_notification' notification.id %}" class="notification-card-link">
+                    <div>
+                        <p class="notification-message">{{ notification.message }}</p>
+                        <small>{{ notification.created_at|date:"d/m/Y H:i" }}</small>
+                    </div>
+                </a>
+
+                <div class="notification-controls">
+                    <details class="notification-menu">
+                        <summary aria-label="Plus d'options">⋯</summary>
+                        <div class="notification-menu__dropdown">
+                            <a href="{% url 'open_notification' notification.id %}" class="notification-menu__action">Ouvrir</a>
+                            {% if not notification.is_read %}
+                            <form method="post" action="{% url 'mark_as_read' notification.id %}">{% csrf_token %}<button type="submit" class="notification-menu__action">Marquer comme lue</button></form>
+                            {% endif %}
+                            <form method="post" action="{% url 'delete_notification' notification.id %}">{% csrf_token %}<button type="submit" class="notification-menu__action notification-menu__action--danger">Supprimer</button></form>
+                        </div>
+                    </details>
+                </div>
+
+                {% if notification.notification_type == "friend_request" and notification.friend_request and notification.friend_request.status == "pending" %}<div class="inline-actions"><form method="post" action="{% url 'accept_friend' notification.friend_request.id %}">{% csrf_token %}<button type="submit" class="btn btn-primary btn-small">Accepter</button></form><form method="post" action="{% url 'reject_friend' notification.friend_request.id %}">{% csrf_token %}<button type="submit" class="btn btn-danger btn-small">Refuser</button></form></div>{% endif %}
+                {% if notification.notification_type == "message_request" and notification.message_request and notification.message_request.status == "pending" %}<div class="inline-actions"><form method="post" action="{% url 'accept_message_request' notification.message_request.id %}">{% csrf_token %}<button type="submit" class="btn btn-primary btn-small">Accepter</button></form><form method="post" action="{% url 'reject_message_request' notification.message_request.id %}">{% csrf_token %}<button type="submit" class="btn btn-danger btn-small">Refuser</button></form></div>{% endif %}
+            </article>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions inline-actions">
+            <form method="post" action="{% url 'mark_all_as_read' %}">{% csrf_token %}<button type="submit" class="btn btn-secondary">Tout marquer comme lu</button></form>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>Vous n'avez aucune notification pour le moment.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

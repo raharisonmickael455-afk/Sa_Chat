@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Créer une publication - Sa Chat{% endblock %}
+
+{% block content %}
+<section class="panel-card simple-panel">
+    <div class="page-header">
+        <div>
+            <p class="eyebrow">Nouvelle publication</p>
+            <h1>Créer une publication</h1>
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="form-card">
+        {% csrf_token %}
+
+        <div class="auth-field">
+            <label for="content">Votre publication</label>
+            <textarea id="content" name="content" rows="6" placeholder="Quoi de neuf ?"></textarea>
+        </div>
+
+        <div class="auth-field"><label for="visibility">Visibilité</label><select id="visibility" name="visibility"><option value="public">Public</option><option value="friends">Amis</option><option value="private">Privé</option></select></div>
+
+        <div class="auth-field">
+            <label for="image">Ajouter une image</label>
+            <input id="image" type="file" name="image" accept="image/*">
+        </div>
+        <div class="auth-field"><label for="video">Ajouter une vidéo</label><input id="video" type="file" name="video" accept="video/mp4,video/webm,video/quicktime"><small>Formats MP4, WebM ou MOV, 50 Mo maximum.</small></div>
+
+        <div class="form-actions inline-actions">
+            <button type="submit" class="btn btn-primary">Publier</button>
+            <a href="{% url 'post_list' %}" class="btn btn-secondary">Retour</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

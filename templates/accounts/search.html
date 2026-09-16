@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Recherche - Sa Chat{% endblock %}
+
+{% block content %}
+<section class="panel-card simple-panel">
+    <div class="page-header"><div><p class="eyebrow">Réseau</p><h1>Rechercher des utilisateurs</h1></div></div>
+    <form method="get" action="{% url 'user_search' %}" class="form-card" data-live-search-form data-search-endpoint="{% url 'search_api' %}">
+        <div class="auth-field"><label for="q">Nom d'utilisateur</label><input id="q" type="search" name="q" value="{{ query }}" placeholder="Ex. mickael" autofocus></div>
+        <button type="submit" class="btn btn-primary">Rechercher</button><div class="live-search-results" data-live-search-results aria-live="polite"></div>
+    </form>
+</section>
+
+{% if query %}
+<section class="content-stack"><div class="panel-card simple-panel">
+    <div class="page-header"><div><p class="eyebrow">Résultats</p><h2>Utilisateurs correspondant à « {{ query }} »</h2></div></div>
+    {% if results %}<div class="user-results">{% for result in results %}<article class="user-result"><div class="profile-header">{% if result.profile.avatar %}<img class="user-avatar user-avatar--small profile-avatar" src="{{ result.profile.avatar.url }}" alt="Photo de {{ result.user.username }}">{% else %}<div class="user-avatar user-avatar--small">{{ result.user.username|first|upper }}</div>{% endif %}<div><h3>{{ result.user.username }}</h3><small>{{ result.user.first_name }} {{ result.user.last_name }}</small></div></div><div class="inline-actions"><a href="{% url 'user_profile' result.user.username %}" class="btn btn-secondary btn-small">Voir le profil</a>{% if result.status == "not_friends" %}<form method="post" action="{% url 'add_friend' result.user.id %}">{% csrf_token %}<button type="submit" class="btn btn-primary btn-small">Ajouter en ami</button></form>{% elif result.status == "friends" %}<span class="muted-note">Amis</span>{% elif result.status == "pending_sent" %}<span class="muted-note">Demande envoyée</span>{% else %}<span class="muted-note">Demande reçue</span>{% endif %}</div></article>{% endfor %}</div>{% else %}<div class="empty-state"><p>Aucun utilisateur trouvé.</p></div>{% endif %}
+</div></section>
+{% endif %}
+{% endblock %}

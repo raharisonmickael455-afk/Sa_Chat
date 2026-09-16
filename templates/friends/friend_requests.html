@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Demandes d'amis - Sa Chat{% endblock %}
+{% block content %}
+<section class="panel-card simple-panel">
+<div class="page-header"><div><p class="eyebrow">Réseau</p><h1>Demandes d'amis</h1></div></div>
+{% if requests %}<div class="user-results">{% for friend_request in requests %}<article class="user-result"><div class="profile-header"><div class="user-avatar user-avatar--small">{{ friend_request.sender.username|first|upper }}</div><div><h3>{{ friend_request.sender.username }}</h3><small>Demande reçue</small></div></div><div class="inline-actions"><form method="post" action="{% url 'accept_friend' friend_request.id %}">{% csrf_token %}<button type="submit" class="btn btn-primary btn-small">Accepter</button></form><form method="post" action="{% url 'reject_friend' friend_request.id %}">{% csrf_token %}<button type="submit" class="btn btn-danger btn-small">Refuser</button></form></div></article>{% endfor %}</div>{% else %}<div class="empty-state"><p>Aucune demande en attente.</p></div>{% endif %}
+</section>
+{% endblock %}

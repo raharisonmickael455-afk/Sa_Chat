@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier la publication - Sa Chat{% endblock %}
+
+{% block content %}
+<section class="panel-card simple-panel">
+    <div class="page-header">
+        <div>
+            <p class="eyebrow">Modification</p>
+            <h1>Modifier la publication</h1>
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="form-card">
+        {% csrf_token %}
+
+        <div class="auth-field">
+            <label for="content">Contenu</label>
+            <textarea id="content" name="content" rows="6">{{ post.content }}</textarea>
+        </div>
+
+        <div class="auth-field"><label for="visibility">Visibilité</label><select id="visibility" name="visibility"><option value="public" {% if post.visibility == "public" %}selected{% endif %}>Public</option><option value="friends" {% if post.visibility == "friends" %}selected{% endif %}>Amis</option><option value="private" {% if post.visibility == "private" %}selected{% endif %}>Privé</option></select></div>
+
+        <div class="auth-field">
+            <label for="image">Nouvelle image</label>
+            <input id="image" type="file" name="image" accept="image/*">
+        </div>
+        <div class="auth-field"><label for="video">Nouvelle vidéo</label><input id="video" type="file" name="video" accept="video/mp4,video/webm,video/quicktime"></div>
+
+        <div class="form-actions inline-actions">
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="{% url 'post_detail' post.id %}" class="btn btn-secondary">Annuler</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

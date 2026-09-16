@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Publication - Sa Chat{% endblock %}
+
+{% block content %}
+<section class="panel-card simple-panel">
+    <div class="page-header article-header">
+        <div>
+            <p class="eyebrow">Détail</p>
+            <h1>Publication</h1>
+        </div>
+        <a href="{% url 'post_list' %}" class="btn btn-secondary">Retour</a>
+    </div>
+
+    <article class="post-detail-card">
+        <div class="post-header">
+            <div class="user-avatar user-avatar--small">{{ post.author.username|first|upper }}</div>
+            <div>
+                <h2><a href="{% url 'user_profile' post.author.username %}">{{ post.author.username }}</a></h2>
+                <small>{{ post.created_at|date:"d/m/Y H:i" }}</small>
+            </div>
+        </div>
+
+        {% if post.content %}
+        <p class="post-body">{{ post.content }}</p>
+        {% endif %}
+
+        {% if post.image %}
+        <img class="post-image" src="{{ post.image.url }}" alt="Image de publication">
+        {% endif %}
+        {% if post.video %}
+        <video class="responsive-video responsive-video--detail" controls preload="metadata">
+            <source src="{{ post.video.url }}">
+            Votre navigateur ne prend pas en charge la vidéo.
+        </video>
+        {% endif %}
+
+        <form method="post" action="{% url 'toggle_like' post.id %}" class="inline-actions reaction-form" data-reaction-form>
+            {% csrf_token %}<input type="hidden" name="next" value="{% url 'post_detail' post.id %}">
+            <button type="submit" class="btn btn-secondary btn-small"><svg class="ui-icon ui-icon--heart {% if user_liked %}is-liked{% endif %}"><use href="#icon-heart"></use></svg> <span data-like-count>{{ post.likes.count }}</span> J'aime</button>
+        </form>
+        <span class="post-stat">{{ post.comments.count }} commentaire{{ post.comments.count|pluralize:"s" }} · {{ post.shares.count }} partage{{ post.shares.count|pluralize:"s" }}</span>
+        <form method="post" action="{% url 'share_post' post.id %}" class="inline-actions">
+            {% csrf_token %}<input type="hidden" name="next" value="{% url 'post_detail' post.id %}">
+            <select name="visibility"><option value="public">Partager publiquement</option><option value="friends" selected>Partager avec mes amis</option><option value="private">Partager uniquement avec moi</option></select>
+            <button type="submit" class="btn btn-secondary btn-small">Partager</button>
+        </form>
+        {% if request.user.conversations.all %}
+        <form method="post" action="{% url 'share_post_to_conversation' post.id %}" class="inline-actions" data-conversation-share-form>
+            {% csrf_token %}
+            <select name="conversation_id" aria-label="Choisir une discussion" required>
+                <option value="">Partager dans une discussion</option>
+                {% for conversation in request.user.conversations.all %}
+                <option value="{{ conversation.id }}">{% for participant in conversation.participants.all %}{% if participant != request.user %}{{ participant.username }}{% endif %}{% endfor %}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-secondary btn-small">Envoyer</button>
+        </form>
+        {% endif %}
+    </article>
+
+    {% if post.author == request.user %}
+    <div class="form-actions inline-actions">
+        <a href="{% url 'edit_post' post.id %}" class="btn btn-secondary">Modifier</a>
+        <a href="{% url 'delete_post' post.id %}" class="btn btn-danger">Supprimer</a>
+        <form method="post" action="{% url 'toggle_archive' post.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'post_list' %}">
+            <button type="submit" class="btn btn-secondary">Archiver</button>
+        </form>
+        <form method="post" action="{% url 'change_post_visibility' post.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'post_detail' post.id %}">
+            <label class="sr-only" for="post-visibility">Confidentialité</label>
+            <select id="post-visibility" name="visibility" onchange="this.form.submit()">
+                <option value="public" {% if post.visibility == "public" %}selected{% endif %}>Public</option>
+                <option value="friends" {% if post.visibility == "friends" %}selected{% endif %}>Amis</option>
+                <option value="private" {% if post.visibility == "private" %}selected{% endif %}>Privé</option>
+            </select>
+        </form>
+    </div>
+    {% endif %}
+
+    <section class="comments-section">
+        <h2>Commentaires ({{ post.comments.count }})</h2>
+        <form method="post" action="{% url 'create_comment' post.id %}" class="form-card">
+            {% csrf_token %}<div class="auth-field"><label for="comment-content">Votre commentaire</label><textarea id="comment-content" name="content" rows="3" required></textarea></div><button type="submit" class="btn btn-primary">Commenter</button>
+        </form>
+        <div class="comment-list">{% for comment in comments %}<article class="comment-item"><strong>{{ comment.author.username }}</strong><small>{{ comment.created_at|date:"d/m/Y H:i" }}</small><p>{{ comment.content }}</p><form method="post" action="{% url 'create_comment' post.id %}" class="reply-form">{% csrf_token %}<input type="hidden" name="parent_id" value="{{ comment.id }}"><textarea name="content" rows="2" placeholder="Répondre à ce commentaire" required></textarea><button class="btn btn-secondary btn-small" type="submit">Répondre</button></form>{% if comment.author == request.user %}<form method="post" action="{% url 'edit_comment' comment.id %}" class="form-card">{% csrf_token %}<textarea name="content" rows="2" required>{{ comment.content }}</textarea><button class="btn btn-secondary btn-small" type="submit">Modifier</button></form><form method="post" action="{% url 'delete_comment' comment.id %}" class="inline-actions">{% csrf_token %}<button class="btn btn-danger btn-small" type="submit">Supprimer</button></form>{% endif %}{% for reply in comment.replies.all %}<article class="comment-item comment-item--reply"><strong>{{ reply.author.username }}</strong><small>{{ reply.created_at|date:"d/m/Y H:i" }}</small><p>{{ reply.content }}</p>{% if reply.author == request.user %}<form method="post" action="{% url 'edit_comment' reply.id %}" class="form-card">{% csrf_token %}<textarea name="content" rows="2" required>{{ reply.content }}</textarea><button class="btn btn-secondary btn-small" type="submit">Modifier</button></form><form method="post" action="{% url 'delete_comment' reply.id %}" class="inline-actions">{% csrf_token %}<button class="btn btn-danger btn-small" type="submit">Supprimer</button></form>{% endif %}</article>{% endfor %}</article>{% empty %}<p class="muted-note">Aucun commentaire.</p>{% endfor %}</div>
+    </section>
+</section>
+{% endblock %}

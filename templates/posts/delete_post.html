@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Supprimer la publication - Sa Chat{% endblock %}
+
+{% block content %}
+<section class="panel-card simple-panel">
+    <div class="page-header">
+        <div>
+            <p class="eyebrow">Confirmation</p>
+            <h1>Supprimer la publication</h1>
+        </div>
+    </div>
+
+    <div class="empty-state">
+        <p>Voulez-vous vraiment supprimer cette publication ?</p>
+    </div>
+
+    <form method="POST" class="form-card">
+        {% csrf_token %}
+        <div class="form-actions inline-actions">
+            <button type="submit" class="btn btn-danger" data-confirm="Supprimer cette publication ?">Oui, supprimer</button>
+            <a href="{% url 'post_detail' post.id %}" class="btn btn-secondary">Annuler</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

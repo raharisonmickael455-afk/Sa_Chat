@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Assistant IA - Sa Chat{% endblock %}
+{% block content %}
+<section class="ai-shell">
+    <div class="ai-hero">
+        <div class="ai-orbit"><span class="ai-orbit__core">S</span></div>
+        <div>
+            <p class="eyebrow">Intelligence Sa Chat</p>
+            <h1>Votre assistant IA</h1>
+            <p class="lead">Posez une question, structurez une idee ou demandez de l'aide. L'assistant vous repond dans votre espace prive.</p>
+        </div>
+    </div>
+    <div class="ai-conversation" aria-live="polite" data-ai-conversation data-conversation-id="{% if ai_conversation %}{{ ai_conversation.id }}{% endif %}">
+        {% if ai_history %}
+            {% for item in ai_history %}
+            <article class="ai-message {% if item.role == 'user' %}ai-message--user{% else %}ai-message--assistant{% endif %}">
+                <div class="ai-message__badge">{% if item.role == 'user' %}{{ user.username|first|upper }}{% else %}S{% endif %}</div>
+                <div><small>{% if item.role == 'user' %}Vous{% else %}Sacha AI{% endif %}</small><p>{{ item.text|linebreaksbr }}</p></div>
+            </article>
+            {% endfor %}
+        {% else %}
+        <div class="ai-empty"><div class="ai-empty__icon"><svg class="ui-icon"><use href="#icon-ai"></use></svg></div><h2>Commencez une conversation</h2><p>L'assistant est pret a vous aider.</p></div>
+        {% endif %}
+    </div>
+    <form method="post" action="{% url 'api_ai_chat' %}" class="ai-composer" data-ai-form data-clear-endpoint="{% url 'api_clear_ai_chat' %}">{% csrf_token %}<label class="sr-only" for="ai-message">Votre message</label><textarea id="ai-message" name="message" rows="2" data-send-on-enter placeholder="Ecrivez votre message..." required></textarea><button type="submit" class="btn btn-primary ai-send"><svg class="ui-icon"><use href="#icon-send"></use></svg><span>Envoyer</span></button><button type="button" class="btn btn-secondary ai-clear" data-ai-clear title="Nouvelle conversation"><svg class="ui-icon"><use href="#icon-trash"></use></svg><span>Effacer</span></button></form>
+</section>
+{% endblock %}

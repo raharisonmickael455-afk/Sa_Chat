@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Conversation - Sa Chat{% endblock %}
+{% block content %}
+<section class="panel-card simple-panel"><div class="page-header"><div><p class="eyebrow">Messagerie</p><h1>{{ other_user.username }}</h1></div><a href="{% url 'conversation_list' %}" class="btn btn-secondary">Retour</a></div>
+<div class="message-list">{% for message in conversation.messages.all %}<article class="message-bubble {% if message.sender == request.user %}message-bubble--mine{% endif %}"><strong>{{ message.sender.username }}</strong>{% if message.shared_post %}<div class="shared-post-message"><small>Publication de {{ message.shared_post.author.username }}</small><p>{{ message.shared_post.content|truncatechars:180 }}</p>{% if message.shared_post.image %}<img class="post-image" src="{{ message.shared_post.image.url }}" alt="Image de la publication partagée">{% endif %}<a href="{% url 'post_detail' message.shared_post.id %}" class="btn btn-secondary btn-small">Voir la publication</a></div>{% else %}<p>{{ message.content }}</p>{% endif %}<small>{{ message.created_at|date:"d/m/Y H:i" }}</small></article>{% empty %}<div class="empty-state"><p>Commencez la conversation.</p></div>{% endfor %}</div>
+<form method="post" class="form-card message-composer">{% csrf_token %}<div class="auth-field"><label for="content">Message</label><textarea id="content" name="content" rows="3" data-send-on-enter placeholder="Écrire un message..." required></textarea></div><button type="submit" class="btn btn-primary">Envoyer</button></form>
+</section>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Profil de {{ profile_user.username }} - Sa Chat{% endblock %}
+
+{% block content %}
+<section class="panel-card simple-panel">
+    <div class="profile-header profile-header--page">
+        <div class="profile-avatar-wrap {% if profile_stories %}profile-avatar-wrap--has-story{% endif %}">{% if profile_data.avatar %}<img class="user-avatar user-avatar--large profile-avatar" src="{{ profile_data.avatar.url }}" alt="Photo de {{ profile_user.username }}">{% else %}<div class="user-avatar user-avatar--large">{{ profile_user.username|first|upper }}</div>{% endif %}</div>
+        <div>
+            <p class="eyebrow">Profil</p>
+            <h1><a href="{% url 'user_profile' profile_user.username %}">{{ profile_user.username }}</a></h1>
+            {% if profile_user.first_name or profile_user.last_name %}<p>{{ profile_user.first_name }} {{ profile_user.last_name }}</p>{% endif %}
+            <small>Membre depuis {{ profile_user.date_joined|date:"d/m/Y" }}</small>
+            {% if can_view_details %}{% if profile_data.bio %}<p>{{ profile_data.bio }}</p>{% endif %}{% if profile_data.presentation %}<p>{{ profile_data.presentation }}</p>{% endif %}<p>{{ friends|length }} ami{{ friends|length|pluralize }}</p>{% if profile_data.interests %}<small>Intérêts : {{ profile_data.interests }}</small>{% endif %}{% endif %}
+        </div>
+    </div>
+    {% if is_owner %}<a href="{% url 'settings' %}" class="btn btn-secondary">Modifier mon profil</a>{% elif relationship == "not_friends" %}<form method="post" action="{% url 'add_friend' profile_user.id %}">{% csrf_token %}<button type="submit" class="btn btn-primary">Ajouter en ami</button></form><form method="post" action="{% url 'start_conversation' profile_user.id %}">{% csrf_token %}<button type="submit" class="btn btn-secondary">Message</button></form>{% elif relationship == "friends" %}<form method="post" action="{% url 'remove_friend' profile_user.id %}">{% csrf_token %}<button type="submit" class="btn btn-danger">Retirer des amis</button></form><form method="post" action="{% url 'start_conversation' profile_user.id %}">{% csrf_token %}<button type="submit" class="btn btn-secondary">Message</button></form>{% elif relationship == "pending_sent" %}<p class="muted-note">Demande envoyée</p><form method="post" action="{% url 'start_conversation' profile_user.id %}">{% csrf_token %}<button type="submit" class="btn btn-secondary">Message</button></form>{% else %}<p class="muted-note">Demande reçue</p>{% endif %}{% if profile_data.is_private and not can_view_details %}<p class="muted-note">Ce profil est privé.</p>{% endif %}
+</section>
+
+{% if can_view_details and profile_stories %}
+<section class="panel-card simple-panel profile-stories">
+    <div class="page-header">
+        <div><p class="eyebrow">24 heures</p><h2>Stories de {{ profile_user.username }}</h2></div>
+        <span class="content-count">{{ profile_stories|length }}</span>
+    </div>
+    <div class="story-rail">
+        {% for story in profile_stories %}
+        <article class="story-card" id="story-{{ story.id }}">
+            <div class="story-card__media">
+                {% if story.image %}<img src="{{ story.image.url }}" alt="Story de {{ profile_user.username }}">
+                {% elif story.video %}<video controls preload="metadata"><source src="{{ story.video.url }}">Votre navigateur ne prend pas en charge la vidéo.</video>
+                {% else %}<div class="story-card__text">{{ story.rich_text|safe }}</div>{% endif %}
+                <div class="story-card__overlay"><span class="story-card__author">{{ profile_user.username }}</span><small>Expire {{ story.expires_at|date:"d/m H:i" }}</small>{% if is_owner %}<form method="post" action="{% url 'delete_story' story.id %}" class="story-delete-form">{% csrf_token %}<button type="submit" class="btn btn-danger btn-small">Supprimer</button></form>{% endif %}</div>
+            </div>
+            {% if story.text and story.image or story.text and story.video %}<p class="story-card__caption">{{ story.rich_text|safe }}</p>{% endif %}
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if can_view_details %}<section class="panel-card simple-panel"><div class="page-header"><div><p class="eyebrow">Réseau</p><h2>Amis</h2></div></div>{% if friends %}<div class="user-results">{% for friend in friends %}<a class="user-result" href="{% url 'user_profile' friend.username %}"><div class="profile-header"><div class="user-avatar user-avatar--small">{{ friend.username|first|upper }}</div><div><h3>{{ friend.username }}</h3><small>Ami</small></div></div></a>{% endfor %}</div>{% else %}<div class="empty-state"><p>Aucun ami à afficher.</p></div>{% endif %}</section>{% endif %}
+
+<section class="content-stack">
+    <div class="panel-card simple-panel">
+        <div class="page-header"><div><p class="eyebrow">Activité</p><h2>Publications</h2></div></div>
+        {% if can_view_details and posts %}
+            <div class="post-list">
+            {% for post in posts %}
+                <article class="post-card">
+                    <div class="post-header"><div class="user-avatar user-avatar--small">{{ profile_user.username|first|upper }}</div><div><h3>{{ profile_user.username }}</h3><small>{{ post.created_at|date:"d/m/Y H:i" }}</small></div></div>
+                    {% if post.content %}<p class="post-body">{{ post.content }}</p>{% endif %}
+                    {% if post.image %}<img class="post-image" src="{{ post.image.url }}" alt="Image de publication">{% endif %}
+                    {% if post.video %}<video class="responsive-video" controls preload="metadata"><source src="{{ post.video.url }}">Votre navigateur ne prend pas en charge la vidéo.</video>{% endif %}
+                </article>
+            {% endfor %}
+            </div>
+        {% else %}<div class="empty-state"><p>Aucune publication.</p></div>{% endif %}
+    </div>
+</section>
+{% endblock %}

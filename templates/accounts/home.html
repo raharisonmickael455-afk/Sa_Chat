@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Accueil - Sa Chat{% endblock %}
+
+{% block content %}
+{% if story_groups %}
+<section class="story-strip panel-card simple-panel">
+    <div class="story-strip__header">
+        <p class="eyebrow">Stories</p>
+        <a href="{% url 'story_list' %}" class="btn btn-secondary btn-small">Voir toutes</a>
+    </div>
+    <div class="story-strip__list">
+        {% for story_group in story_groups %}
+        <a href="{% url 'story_list' %}" class="story-bubble" aria-label="Voir la story de {{ story_group.author_name }}">
+            <span class="story-bubble__ring {% if story_group.author_id == user.id %}story-bubble__ring--self{% endif %}">
+                <span class="user-avatar user-avatar--small">{{ story_group.author_name|first|upper }}</span>
+            </span>
+            <span class="story-bubble__name">{{ story_group.author_name }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="hero-panel panel-card">
+    <div class="hero-grid">
+        <div>
+            <p class="eyebrow">Espace professionnel</p>
+            <h1>Connectez-vous avec votre réseau en toute confiance.</h1>
+            <p class="lead">
+                Partagez vos idées, restez informé et développez des relations solides au sein de votre communauté.
+            </p>
+            <div class="hero-actions">
+                <a href="{% url 'post_list' %}" class="btn btn-primary">Voir les publications</a>
+                <a href="{% url 'create_post' %}" class="btn btn-secondary">Publier</a>
+            </div>
+        </div>
+
+        <div class="metric-grid">
+            <div class="metric-card">
+                <span>Messages</span>
+                <strong>{{ post_count|default:0 }}</strong>
+            </div>
+            <div class="metric-card">
+                <span>Amis</span>
+                <strong>{{ friend_count|default:0 }}</strong>
+            </div>
+            <div class="metric-card">
+                <span>Notifications</span>
+                <strong>{{ unread_notification_count|default:0 }}</strong>
+            </div>
+            <div class="metric-card">
+                <span>Disponibilité</span>
+                <strong>En ligne</strong>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content-stack">
+    <div class="panel-card simple-panel">
+        <div class="page-header"><div><p class="eyebrow">Fil d'actualité</p><h2>Les dernières publications</h2></div><a href="{% url 'create_post' %}" class="btn btn-primary">Publier</a></div>
+        {% if feed_posts %}<div class="post-list">{% for post in feed_posts %}<article class="post-card"><div class="post-header"><div class="avatar-story {% if post.author_id in story_user_ids %}avatar-story--active{% endif %}"><div class="user-avatar user-avatar--small">{{ post.author.username|first|upper }}</div></div><div class="post-author-meta"><h3>{{ post.author.username }}</h3><small>{{ post.created_at|date:"d/m/Y H:i" }} · {{ post.get_visibility_display }}</small></div></div>{% if post.content %}<p class="post-body">{{ post.content }}</p>{% endif %}{% if post.image %}<img class="post-image" src="{{ post.image.url }}" alt="Image de publication">{% endif %}<div class="post-metrics"><span>{{ post.likes.count }} réaction{{ post.likes.count|pluralize:"s" }}</span><span>{{ post.comments.count }} commentaire{{ post.comments.count|pluralize:"s" }}</span><span>{{ post.shares.count }} partage{{ post.shares.count|pluralize:"s" }}</span></div><div class="post-actions-modern"><form method="post" action="{% url 'toggle_like' post.id %}" class="reaction-form" data-reaction-form>{% csrf_token %}<input type="hidden" name="next" value="{% url 'home' %}"><input type="hidden" name="reaction_type" value="like"><button type="button" class="action-button action-button--like" data-reaction-toggle><span class="reaction-emoji">👍</span><span>J'aime</span></button><div class="reaction-picker" data-reaction-menu><button type="button" class="reaction-option" data-reaction="like">👍 J'aime</button><button type="button" class="reaction-option" data-reaction="love">❤️ J'adore</button><button type="button" class="reaction-option" data-reaction="haha">😂 Haha</button><button type="button" class="reaction-option" data-reaction="wow">😮 Waouh</button><button type="button" class="reaction-option" data-reaction="sad">😢 Triste</button><button type="button" class="reaction-option" data-reaction="angry">😡 En colère</button></div></form><button type="button" class="action-button action-button--comment" data-comment-toggle aria-expanded="false" aria-controls="home-comments-{{ post.id }}"><svg class="ui-icon action-icon" aria-hidden="true"><use href="#icon-message"></use></svg><span>Commenter</span></button><button type="button" class="action-button action-button--share" data-share-toggle><svg class="ui-icon action-icon" aria-hidden="true"><use href="#icon-share"></use></svg><span>Partager</span></button><form method="post" action="{% url 'save_post' post.id %}" class="save-form">{% csrf_token %}<input type="hidden" name="next" value="{% url 'home' %}"><button type="submit" class="action-button action-button--save"><svg class="ui-icon action-icon" aria-hidden="true"><use href="#icon-bookmark"></use></svg><span>Enregistrer</span></button></form></div><div class="comments-panel" id="home-comments-{{ post.id }}" data-comment-panel hidden><div class="comments-panel__header"><h3>Commentaires</h3><button type="button" class="comments-panel__close" data-comment-close>Fermer</button></div><div class="comment-list">{% for comment in post.comments.all %}<article class="comment-item"><div class="comment-item__meta"><strong>{{ comment.author.username }}</strong><small>{{ comment.created_at|date:"d/m/Y H:i" }}</small></div><p>{{ comment.content }}</p></article>{% empty %}<p class="muted-note">Aucun commentaire pour le moment.</p>{% endfor %}</div><form method="post" action="{% url 'create_comment' post.id %}" class="comment-form" data-comment-form>{% csrf_token %}<input type="hidden" name="next" value="{% url 'home' %}"><textarea name="content" rows="2" placeholder="Écrire un commentaire..." required></textarea><button type="submit" class="btn btn-primary btn-small">Publier</button></form></div><div class="share-panel" data-share-panel hidden><form method="post" action="{% url 'share_post' post.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'home' %}"><button type="submit" name="visibility" value="friends" class="share-option">Partager sur mon profil</button><button type="button" class="share-option" data-copy-link="{{ request.build_absolute_uri|cut:'/' }}{% url 'post_detail' post.id %}">Copier le lien</button><button type="button" class="share-option share-option--cancel" data-close-share>Annuler</button></form></div></article>{% endfor %}</div>{% else %}<div class="empty-state"><p>Aucune publication visible pour le moment.</p></div>{% endif %}
+    </div>
+</section>
+
+<section class="content-stack">
+    <div class="panel-card simple-panel">
+        <div class="page-header">
+            <div>
+                <p class="eyebrow">Vue d’ensemble</p>
+                <h2>Une expérience claire et moderne.</h2>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Communication</h3>
+                <p>Restez proche de vos contacts avec un espace simple, lisible et professionnel.</p>
+            </div>
+            <div class="info-card">
+                <h3>Gestion</h3>
+                <p>Suivez vos demandes d’amis, vos notifications et vos contributions en un coup d’œil.</p>
+            </div>
+            <div class="info-card">
+                <h3>Confiance</h3>
+                <p>Une identité visuelle sobre en vert et blanc pour un environnement plus crédible.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

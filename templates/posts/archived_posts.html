@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Publications archivées - Sa Chat{% endblock %}
+
+{% block content %}
+<section class="panel-card simple-panel">
+    <div class="page-header">
+        <div>
+            <p class="eyebrow">Archives</p>
+            <h1>Publications archivées</h1>
+        </div>
+        <a href="{% url 'post_list' %}" class="btn btn-secondary">Retour aux publications</a>
+    </div>
+
+    {% if posts %}
+    <div class="post-list">
+        {% for post in posts %}
+        <article class="post-card">
+            <div class="post-header">
+                <div class="user-avatar user-avatar--small">{{ post.author.username|first|upper }}</div>
+                <div>
+                    <h3>{{ post.author.username }}</h3>
+                    <small>{{ post.created_at|date:"d/m/Y H:i" }} · {{ post.get_visibility_display }}</small>
+                </div>
+            </div>
+            {% if post.content %}<p class="post-body">{{ post.content }}</p>{% endif %}
+            {% if post.image %}<img class="post-image" src="{{ post.image.url }}" alt="Image de publication">{% endif %}
+            {% if post.video %}<video class="responsive-video" controls preload="metadata"><source src="{{ post.video.url }}">Votre navigateur ne prend pas en charge la vidéo.</video>{% endif %}
+            <div class="inline-actions">
+                <form method="post" action="{% url 'toggle_archive' post.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'archived_posts' %}">
+                    <button type="submit" class="btn btn-secondary btn-small">Restaurer</button>
+                </form>
+                <a href="{% url 'edit_post' post.id %}" class="btn btn-secondary btn-small">Modifier</a>
+                <a href="{% url 'delete_post' post.id %}" class="btn btn-danger btn-small">Supprimer</a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><p>Aucune publication archivée.</p></div>
+    {% endif %}
+</section>
+{% endblock %}

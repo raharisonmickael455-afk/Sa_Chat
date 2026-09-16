@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Sa Chat</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/interactive-effects.css' %}">
+</head>
+<body class="auth-body">
+    <div class="auth-shell">
+        <h1>Créer un compte</h1>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="flash-message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="auth-field">
+                <label for="username">Nom d'utilisateur</label>
+                <input id="username" type="text" name="username" required>
+            </div>
+
+            <div class="auth-field">
+                <label for="email">Adresse e-mail</label>
+                <input id="email" type="email" name="email" required autocomplete="email">
+            </div>
+
+            <div class="auth-field">
+                <label for="password">Mot de passe</label>
+                <input id="password" type="password" name="password" required>
+            </div>
+
+            <div class="auth-field">
+                <label for="password_confirm">Confirmer le mot de passe</label>
+                <input id="password_confirm" type="password" name="password_confirm" required>
+            </div>
+
+            <div class="auth-actions">
+                <button type="submit" class="btn btn-primary">S'inscrire</button>
+            </div>
+        </form>
+
+        <p class="auth-note">
+            Vous avez déjà un compte ?
+            <a href="{% url 'login' %}" class="auth-link">Se connecter</a>
+        </p>
+    </div>
+    <script src="{% static 'js/interactive-effects.js' %}" defer></script>
+</body>
+</html>

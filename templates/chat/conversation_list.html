@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Messages - Sa Chat{% endblock %}
+{% block content %}
+<section class="panel-card simple-panel">
+	<div class="page-header"><div><p class="eyebrow">Messagerie</p><h1>Messages</h1></div></div>
+	<form method="get" class="conversation-search"><label class="sr-only" for="conversation-query">Rechercher une conversation</label><input id="conversation-query" class="search-input" type="search" name="q" value="{{ conversation_query }}" placeholder="Rechercher une conversation..."><button type="submit" class="btn btn-secondary btn-small">Rechercher</button></form>
+
+	{% if message_requests %}<div class="message-requests"><h2 class="subsection-title">Demandes de messages</h2>{% for item in message_requests %}<article class="user-result"><div class="profile-header"><div class="user-avatar user-avatar--small">{{ item.sender.username|first|upper }}</div><div><h3>{{ item.sender.username }}</h3><small>Vous a envoyé une demande de message.</small></div></div><div class="inline-actions"><form method="post" action="{% url 'accept_message_request' item.id %}">{% csrf_token %}<button type="submit" class="btn btn-primary btn-small">Accepter</button></form><form method="post" action="{% url 'reject_message_request' item.id %}">{% csrf_token %}<button type="submit" class="btn btn-danger btn-small">Refuser</button></form></div></article>{% endfor %}</div>{% endif %}
+
+	{% if conversations %}<div class="user-results">{% for item in conversations %}<a class="user-result" href="{% url 'conversation' item.id %}"><div><h3>{% for participant in item.participants.all %}{% if participant != request.user %}{{ participant.username }}{% endif %}{% endfor %}</h3><small>Conversation privée{% if item.unread_count %} · {{ item.unread_count }} non lu{{ item.unread_count|pluralize }}{% endif %}</small></div><span>Voir</span></a>{% endfor %}</div>{% else %}<div class="empty-state"><p>Aucune conversation. Ouvrez un profil pour commencer.</p></div>{% endif %}
+</section>
+{% endblock %}

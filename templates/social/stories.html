@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Stories - Sa Chat{% endblock %}
+{% block content %}
+<section class="panel-card simple-panel story-composer">
+	<div class="page-header"><div><p class="eyebrow">24 heures</p><h1>Stories</h1><p class="muted-note">Partagez un moment qui disparaîtra automatiquement demain.</p></div></div>
+	<form method="post" enctype="multipart/form-data" class="form-card">
+		{% csrf_token %}
+		<div class="auth-field"><label for="text">Message</label><input id="text" name="text" maxlength="280" placeholder="Exprimez votre humeur..."></div>
+		<div class="story-upload-grid"><div class="auth-field"><label for="image">Image</label><input id="image" type="file" name="image" accept="image/*"></div><div class="auth-field"><label for="video">Vidéo courte</label><input id="video" type="file" name="video" accept="video/*"></div></div>
+		<button class="btn btn-primary" type="submit">Publier une story</button>
+	</form>
+</section>
+<section class="content-stack story-section">
+	<div class="section-heading"><div><p class="eyebrow">À découvrir</p><h2>Stories actives</h2></div><span class="content-count">{{ stories|length }}</span></div>
+	<div class="story-rail">
+		{% for story in stories %}
+		<article class="story-card">
+			<div class="story-card__media">
+				{% if story.image %}
+					<img src="{{ story.image.url }}" alt="Story de {{ story.author.username }}">
+				{% elif story.video %}
+					<video controls preload="metadata"><source src="{{ story.video.url }}">Votre navigateur ne prend pas en charge la vidéo.</video>
+				{% else %}
+					<div class="story-card__text">{{ story.rich_text|safe }}</div>
+				{% endif %}
+				<div class="story-card__overlay">
+					<a href="{% url 'user_profile' story.author.username %}" class="story-card__author">{{ story.author.username }}</a>
+					<small>Expire {{ story.expires_at|date:"d/m H:i" }}</small>
+					{% if story.author == request.user %}
+					<form method="post" action="{% url 'delete_story' story.id %}" class="story-delete-form">{% csrf_token %}<button type="submit" class="btn btn-danger btn-small">Supprimer</button></form>
+					{% endif %}
+				</div>
+			</div>
+			{% if story.text and story.image or story.text and story.video %}
+			<p class="story-card__caption">{{ story.rich_text|safe }}</p>
+			{% endif %}
+		</article>
+		{% empty %}<div class="empty-state"><p>Aucune story active.</p></div>{% endfor %}
+	</div>
+</section>
+{% endblock %}
